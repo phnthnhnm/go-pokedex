@@ -3,8 +3,10 @@ package main
 import (
 	"bufio"
 	"fmt"
+	"math/rand"
 	"os"
 	"strings"
+	"time"
 
 	"github.com/phnthnhnm/go-pokedex/internal/api"
 )
@@ -18,6 +20,7 @@ type cliCommand struct {
 type config struct {
 	Next     string
 	Previous string
+	Pokedex  map[string]api.Pokemon
 }
 
 func getCommands() map[string]cliCommand {
@@ -47,14 +50,21 @@ func getCommands() map[string]cliCommand {
 			description: "Explore a specific location area and list its Pokemon",
 			callback:    commandExplore,
 		},
+		"catch": {
+			name:        "catch",
+			description: "Attempt to catch a Pokemon by name",
+			callback:    commandCatch,
+		},
 	}
 }
 
 func main() {
 	scanner := bufio.NewScanner(os.Stdin)
 	cfg := &config{
-		Next: "https://pokeapi.co/api/v2/location-area/",
+		Next:    "https://pokeapi.co/api/v2/location-area/",
+		Pokedex: make(map[string]api.Pokemon),
 	}
+	rand.Seed(time.Now().UnixNano()) // Seed random number generator
 	for {
 		fmt.Print("Pokedex > ")
 		if !scanner.Scan() {
@@ -160,5 +170,38 @@ func commandExplore(cfg *config, args []string) error {
 		fmt.Printf(" - %s\n", pokemon.Pokemon.Name)
 	}
 
+	return nil
+}
+
+func commandCatch(cfg *config, args []string) error {
+	if len(args) < 1 {
+		fmt.Println("Usage: catch <pokemon-name>")
+		return nil
+	}
+
+	pokemonName := args[0]
+	fmt.Printf("Throwing a Pokeball at %s...\n", pokemonName)
+
+	url := fmt.Sprintf("https://pokeapi.co/api/v2/pokemon/%s/", pokemonName)
+	pokemon, err := api.FetchPokemonDetails(url)
+	if err != nil {
+		return fmt.Errorf("failed to fetch Pokemon details: %w", err)
+	}
+
+	catchChance := 50 + (100-pokemon.BaseExperience)/2
+	if catchChance > 95 {
+		catchChance = 95 // Cap the maximum chance at 95%
+	} else if catchChance < 5 {
+		catchChance = 5 // Ensure a minimum chance of 5%
+	}
+
+	if rand.Intn(100) >= catchChance {
+		fmt.Printf("%s escaped!\n", pokemonName)
+		return nil
+	}
+
+	// Add Pokemon to user's Pokedex
+	cfg.Pokedex[pokemonName] = *pokemon
+	fmt.Printf("%s was caught!\n", pokemonName)
 	return nil
 }
