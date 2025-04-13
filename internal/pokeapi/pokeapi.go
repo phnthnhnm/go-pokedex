@@ -1,4 +1,4 @@
-package api
+package pokeapi
 
 import (
 	"encoding/json"

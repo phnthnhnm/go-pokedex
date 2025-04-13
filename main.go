@@ -7,7 +7,7 @@ import (
 	"os"
 	"strings"
 
-	"github.com/phnthnhnm/go-pokedex/internal/api"
+	"github.com/phnthnhnm/go-pokedex/internal/pokeapi"
 )
 
 type cliCommand struct {
@@ -19,7 +19,7 @@ type cliCommand struct {
 type config struct {
 	Next     string
 	Previous string
-	Pokedex  map[string]api.Pokemon
+	Pokedex  map[string]pokeapi.Pokemon
 }
 
 func getCommands() map[string]cliCommand {
@@ -66,7 +66,7 @@ func main() {
 	scanner := bufio.NewScanner(os.Stdin)
 	cfg := &config{
 		Next:    "https://pokeapi.co/api/v2/location-area/",
-		Pokedex: make(map[string]api.Pokemon),
+		Pokedex: make(map[string]pokeapi.Pokemon),
 	}
 	for {
 		fmt.Print("Pokedex > ")
@@ -119,7 +119,7 @@ func commandMap(cfg *config, args []string) error {
 		return nil
 	}
 
-	data, err := api.FetchLocationAreas(cfg.Next)
+	data, err := pokeapi.FetchLocationAreas(cfg.Next)
 	if err != nil {
 		return err
 	}
@@ -139,7 +139,7 @@ func commandMapBack(cfg *config, args []string) error {
 		return nil
 	}
 
-	data, err := api.FetchLocationAreas(cfg.Previous)
+	data, err := pokeapi.FetchLocationAreas(cfg.Previous)
 	if err != nil {
 		return err
 	}
@@ -163,7 +163,7 @@ func commandExplore(cfg *config, args []string) error {
 	fmt.Printf("Exploring %s...\n", locationName)
 
 	url := fmt.Sprintf("https://pokeapi.co/api/v2/location-area/%s/", locationName)
-	data, err := api.FetchLocationAreaDetails(url)
+	data, err := pokeapi.FetchLocationAreaDetails(url)
 	if err != nil {
 		return err
 	}
@@ -186,7 +186,7 @@ func commandCatch(cfg *config, args []string) error {
 	fmt.Printf("Throwing a Pokeball at %s...\n", pokemonName)
 
 	url := fmt.Sprintf("https://pokeapi.co/api/v2/pokemon/%s/", pokemonName)
-	pokemon, err := api.FetchPokemonDetails(url)
+	pokemon, err := pokeapi.FetchPokemonDetails(url)
 	if err != nil {
 		return fmt.Errorf("failed to fetch Pokemon details: %w", err)
 	}

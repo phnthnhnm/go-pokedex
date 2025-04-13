@@ -3,7 +3,7 @@ package main
 import (
 	"testing"
 
-	"github.com/phnthnhnm/go-pokedex/internal/api"
+	"github.com/phnthnhnm/go-pokedex/internal/pokeapi"
 )
 
 func TestCleanInput(t *testing.T) {
@@ -70,7 +70,7 @@ func TestCommandExplore(t *testing.T) {
 
 func TestCommandInspect(t *testing.T) {
 	cfg := &config{
-		Pokedex: map[string]api.Pokemon{
+		Pokedex: map[string]pokeapi.Pokemon{
 			"pikachu": {
 				Name:   "pikachu",
 				Height: 4,
