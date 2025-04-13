@@ -12,7 +12,7 @@ import (
 type cliCommand struct {
 	name        string
 	description string
-	callback    func(*config) error
+	callback    func(*config, []string) error
 }
 
 type config struct {
@@ -42,6 +42,11 @@ func getCommands() map[string]cliCommand {
 			description: "Displays the previous 20 location areas in the Pokemon world",
 			callback:    commandMapBack,
 		},
+		"explore": {
+			name:        "explore",
+			description: "Explore a specific location area and list its Pokemon",
+			callback:    commandExplore,
+		},
 	}
 }
 
@@ -59,8 +64,9 @@ func main() {
 		words := cleanInput(input)
 		if len(words) > 0 {
 			commandName := words[0]
+			args := words[1:]
 			if command, found := getCommands()[commandName]; found {
-				if err := command.callback(cfg); err != nil {
+				if err := command.callback(cfg, args); err != nil {
 					fmt.Printf("Error: %s\n", err)
 				}
 			} else {
@@ -78,13 +84,13 @@ func cleanInput(text string) []string {
 	return words
 }
 
-func commandExit(cfg *config) error {
+func commandExit(cfg *config, args []string) error {
 	fmt.Println("Closing the Pokedex... Goodbye!")
 	os.Exit(0)
 	return nil
 }
 
-func commandHelp(cfg *config) error {
+func commandHelp(cfg *config, args []string) error {
 	fmt.Println("Welcome to the Pokedex!")
 	fmt.Println("Usage:")
 	fmt.Println()
@@ -94,7 +100,7 @@ func commandHelp(cfg *config) error {
 	return nil
 }
 
-func commandMap(cfg *config) error {
+func commandMap(cfg *config, args []string) error {
 	if cfg.Next == "" {
 		fmt.Println("No more locations to display.")
 		return nil
@@ -114,7 +120,7 @@ func commandMap(cfg *config) error {
 	return nil
 }
 
-func commandMapBack(cfg *config) error {
+func commandMapBack(cfg *config, args []string) error {
 	if cfg.Previous == "" {
 		fmt.Println("You're on the first page.")
 		return nil
@@ -131,5 +137,28 @@ func commandMapBack(cfg *config) error {
 
 	cfg.Next = data.Next
 	cfg.Previous = data.Previous
+	return nil
+}
+
+func commandExplore(cfg *config, args []string) error {
+	if len(args) < 1 {
+		fmt.Println("Usage: explore <location-area-name>")
+		return nil
+	}
+
+	locationName := args[0]
+	fmt.Printf("Exploring %s...\n", locationName)
+
+	url := fmt.Sprintf("https://pokeapi.co/api/v2/location-area/%s/", locationName)
+	data, err := api.FetchLocationAreaDetails(url)
+	if err != nil {
+		return err
+	}
+
+	fmt.Println("Found Pokemon:")
+	for _, pokemon := range data.PokemonEncounters {
+		fmt.Printf(" - %s\n", pokemon.Pokemon.Name)
+	}
+
 	return nil
 }
