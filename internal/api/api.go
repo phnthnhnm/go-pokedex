@@ -5,7 +5,12 @@ import (
 	"fmt"
 	"io"
 	"net/http"
+	"time"
+
+	"github.com/phnthnhnm/go-pokedex/internal/pokecache"
 )
+
+var cache = pokecache.NewCache(5 * time.Minute)
 
 type LocationAreaResponse struct {
 	Results []struct {
@@ -15,8 +20,15 @@ type LocationAreaResponse struct {
 	Previous string `json:"previous"`
 }
 
-// FetchLocationAreas fetches location areas from the given URL.
 func FetchLocationAreas(url string) (*LocationAreaResponse, error) {
+	if cachedData, found := cache.Get(url); found {
+		var data LocationAreaResponse
+		if err := json.Unmarshal(cachedData, &data); err != nil {
+			return nil, fmt.Errorf("failed to unmarshal cached data: %w", err)
+		}
+		return &data, nil
+	}
+
 	resp, err := http.Get(url)
 	if err != nil {
 		return nil, fmt.Errorf("failed to fetch location areas: %w", err)
@@ -29,10 +41,16 @@ func FetchLocationAreas(url string) (*LocationAreaResponse, error) {
 		return nil, fmt.Errorf("received non-200 response: %d", resp.StatusCode)
 	}
 
-	var data LocationAreaResponse
-	if err := json.NewDecoder(resp.Body).Decode(&data); err != nil {
-		return nil, fmt.Errorf("failed to decode response: %w", err)
+	body, err := io.ReadAll(resp.Body)
+	if err != nil {
+		return nil, fmt.Errorf("failed to read response body: %w", err)
 	}
 
+	var data LocationAreaResponse
+	if err := json.Unmarshal(body, &data); err != nil {
+		return nil, fmt.Errorf("failed to unmarshal response body: %w", err)
+	}
+
+	cache.Add(url, body)
 	return &data, nil
 }
