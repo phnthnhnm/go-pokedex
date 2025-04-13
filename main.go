@@ -6,7 +6,6 @@ import (
 	"math/rand"
 	"os"
 	"strings"
-	"time"
 
 	"github.com/phnthnhnm/go-pokedex/internal/api"
 )
@@ -64,7 +63,6 @@ func main() {
 		Next:    "https://pokeapi.co/api/v2/location-area/",
 		Pokedex: make(map[string]api.Pokemon),
 	}
-	rand.Seed(time.Now().UnixNano()) // Seed random number generator
 	for {
 		fmt.Print("Pokedex > ")
 		if !scanner.Scan() {
