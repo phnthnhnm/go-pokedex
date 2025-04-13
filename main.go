@@ -2,12 +2,11 @@ package main
 
 import (
 	"bufio"
-	"encoding/json"
 	"fmt"
-	"io"
-	"net/http"
 	"os"
 	"strings"
+
+	"github.com/phnthnhnm/go-pokedex/internal/api"
 )
 
 type cliCommand struct {
@@ -19,14 +18,6 @@ type cliCommand struct {
 type config struct {
 	Next     string
 	Previous string
-}
-
-type locationAreaResponse struct {
-	Results []struct {
-		Name string `json:"name"`
-	} `json:"results"`
-	Next     string `json:"next"`
-	Previous string `json:"previous"`
 }
 
 func getCommands() map[string]cliCommand {
@@ -109,24 +100,9 @@ func commandMap(cfg *config) error {
 		return nil
 	}
 
-	resp, err := http.Get(cfg.Next)
+	data, err := api.FetchLocationAreas(cfg.Next)
 	if err != nil {
-		return fmt.Errorf("failed to fetch location areas: %w", err)
-	}
-	defer func(Body io.ReadCloser) {
-		err := Body.Close()
-		if err != nil {
-
-		}
-	}(resp.Body)
-
-	if resp.StatusCode != http.StatusOK {
-		return fmt.Errorf("received non-200 response: %d", resp.StatusCode)
-	}
-
-	var data locationAreaResponse
-	if err := json.NewDecoder(resp.Body).Decode(&data); err != nil {
-		return fmt.Errorf("failed to decode response: %w", err)
+		return err
 	}
 
 	for _, location := range data.Results {
@@ -144,24 +120,9 @@ func commandMapBack(cfg *config) error {
 		return nil
 	}
 
-	resp, err := http.Get(cfg.Previous)
+	data, err := api.FetchLocationAreas(cfg.Previous)
 	if err != nil {
-		return fmt.Errorf("failed to fetch location areas: %w", err)
-	}
-	defer func(Body io.ReadCloser) {
-		err := Body.Close()
-		if err != nil {
-
-		}
-	}(resp.Body)
-
-	if resp.StatusCode != http.StatusOK {
-		return fmt.Errorf("received non-200 response: %d", resp.StatusCode)
-	}
-
-	var data locationAreaResponse
-	if err := json.NewDecoder(resp.Body).Decode(&data); err != nil {
-		return fmt.Errorf("failed to decode response: %w", err)
+		return err
 	}
 
 	for _, location := range data.Results {
