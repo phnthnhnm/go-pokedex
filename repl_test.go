@@ -41,11 +41,10 @@ func TestCleanInput(t *testing.T) {
 
 func TestCommandHelp(t *testing.T) {
 	cfg := &config{}
-	err := commandHelp(cfg)
+	err := commandHelp(cfg, []string{})
 	if err != nil {
 		t.Errorf("commandHelp returned an error: %v", err)
 	}
-	// No specific output to check, but ensure no errors occur.
 }
 
 func TestCommandExit(t *testing.T) {
@@ -55,5 +54,14 @@ func TestCommandExit(t *testing.T) {
 			t.Errorf("commandExit did not call os.Exit")
 		}
 	}()
-	_ = commandExit(cfg)
+	_ = commandExit(cfg, []string{})
+}
+
+func TestCommandExplore(t *testing.T) {
+	cfg := &config{}
+	args := []string{"pastoria-city-area"}
+	err := commandExplore(cfg, args)
+	if err != nil {
+		t.Errorf("commandExplore returned an error: %v", err)
+	}
 }
