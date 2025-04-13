@@ -10,7 +10,17 @@ A CLI Pokémon game built with Go and the PokéAPI.
 
 ## Requirements
 
-- Go 1.16 or later
+- Go 1.16 or later.
+
+## Installation
+
+### Pre-built binaries
+
+1. Download binary that matches your system from the [release](https://github.com/phnthnhnm/go-pokedex/releases/latest)
+   page.
+2. Unzip the archive and run the go-pokedex binary.
+
+### [Run from source](#Development)
 
 ## How to Play
 
