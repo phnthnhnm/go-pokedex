@@ -43,8 +43,13 @@ func getCommands() map[string]cliCommand {
 		},
 		"map": {
 			name:        "map",
-			description: "Displays location areas in the Pokemon world",
+			description: "Displays the next 20 location areas in the Pokemon world",
 			callback:    commandMap,
+		},
+		"mapb": {
+			name:        "mapb",
+			description: "Displays the previous 20 location areas in the Pokemon world",
+			callback:    commandMapBack,
 		},
 	}
 }
@@ -105,6 +110,41 @@ func commandMap(cfg *config) error {
 	}
 
 	resp, err := http.Get(cfg.Next)
+	if err != nil {
+		return fmt.Errorf("failed to fetch location areas: %w", err)
+	}
+	defer func(Body io.ReadCloser) {
+		err := Body.Close()
+		if err != nil {
+
+		}
+	}(resp.Body)
+
+	if resp.StatusCode != http.StatusOK {
+		return fmt.Errorf("received non-200 response: %d", resp.StatusCode)
+	}
+
+	var data locationAreaResponse
+	if err := json.NewDecoder(resp.Body).Decode(&data); err != nil {
+		return fmt.Errorf("failed to decode response: %w", err)
+	}
+
+	for _, location := range data.Results {
+		fmt.Println(location.Name)
+	}
+
+	cfg.Next = data.Next
+	cfg.Previous = data.Previous
+	return nil
+}
+
+func commandMapBack(cfg *config) error {
+	if cfg.Previous == "" {
+		fmt.Println("You're on the first page.")
+		return nil
+	}
+
+	resp, err := http.Get(cfg.Previous)
 	if err != nil {
 		return fmt.Errorf("failed to fetch location areas: %w", err)
 	}
