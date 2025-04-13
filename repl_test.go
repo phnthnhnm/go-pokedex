@@ -1,6 +1,8 @@
 package main
 
-import "testing"
+import (
+	"testing"
+)
 
 func TestCleanInput(t *testing.T) {
 	cases := []struct {
@@ -35,4 +37,23 @@ func TestCleanInput(t *testing.T) {
 		}
 	}
 
+}
+
+func TestCommandHelp(t *testing.T) {
+	cfg := &config{}
+	err := commandHelp(cfg)
+	if err != nil {
+		t.Errorf("commandHelp returned an error: %v", err)
+	}
+	// No specific output to check, but ensure no errors occur.
+}
+
+func TestCommandExit(t *testing.T) {
+	cfg := &config{}
+	defer func() {
+		if r := recover(); r == nil {
+			t.Errorf("commandExit did not call os.Exit")
+		}
+	}()
+	_ = commandExit(cfg)
 }
