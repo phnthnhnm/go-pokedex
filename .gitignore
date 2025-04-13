@@ -29,3 +29,5 @@ go-pokedex
 
 # JetBrains IDEs generate files
 .idea/
+# Added by goreleaser init:
+dist/
