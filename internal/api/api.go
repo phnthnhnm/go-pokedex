@@ -12,14 +12,6 @@ import (
 
 var cache = pokecache.NewCache(5 * time.Minute)
 
-type LocationAreaResponse struct {
-	Results []struct {
-		Name string `json:"name"`
-	} `json:"results"`
-	Next     string `json:"next"`
-	Previous string `json:"previous"`
-}
-
 func FetchLocationAreas(url string) (*LocationAreaResponse, error) {
 	if cachedData, found := cache.Get(url); found {
 		var data LocationAreaResponse
@@ -53,14 +45,6 @@ func FetchLocationAreas(url string) (*LocationAreaResponse, error) {
 
 	cache.Add(url, body)
 	return &data, nil
-}
-
-type LocationAreaDetailsResponse struct {
-	PokemonEncounters []struct {
-		Pokemon struct {
-			Name string `json:"name"`
-		} `json:"pokemon"`
-	} `json:"pokemon_encounters"`
 }
 
 func FetchLocationAreaDetails(url string) (*LocationAreaDetailsResponse, error) {
